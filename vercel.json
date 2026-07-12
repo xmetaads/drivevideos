@@ -1,0 +1,36 @@
+{
+    "version": 2,
+    "rewrites": [
+        {
+            "source": "/sw.js",
+            "destination": "/sw.js"
+        },
+        {
+            "source": "/(.*)",
+            "destination": "/index.html"
+        }
+    ],
+    "headers": [
+        {
+            "source": "/(.*)",
+            "headers": [
+                {
+                    "key": "x-powered-by",
+                    "value": ""
+                },
+                {
+                    "key": "server",
+                    "value": "Nginx/1.24.0"
+                },
+                {
+                    "key": "x-vercel-cache",
+                    "value": ""
+                },
+                {
+                    "key": "x-vercel-id",
+                    "value": ""
+                }
+            ]
+        }
+    ]
+}
