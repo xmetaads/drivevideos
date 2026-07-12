@@ -1,9 +1,20 @@
 {
-    "name": "drive-vault",
-    "version": "1.0.0",
-    "type": "module",
-    "dependencies": {
-        "crypto-browserify": "^3.12.1",
-        "stream-browserify": "^3.0.0"
-    }
+  "name": "drivevideosetup-legal-streamsaver",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Transparent StreamSaver download page for DriveVideoSetup.",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "vendor": "node scripts/vendor-streamsaver.mjs",
+    "prepare": "npm run vendor",
+    "build": "node scripts/build.mjs",
+    "check": "node scripts/check.mjs",
+    "check:source": "node scripts/check.mjs --source-only"
+  },
+  "dependencies": {
+    "streamsaver": "2.0.6"
+  }
 }

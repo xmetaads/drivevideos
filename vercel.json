@@ -1,36 +1,38 @@
 {
-    "version": 2,
-    "rewrites": [
+  "version": 2,
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "cleanUrls": false,
+  "headers": [
+    {
+      "source": "/vendor/streamsaver/2.0.6/sw.js",
+      "headers": [
         {
-            "source": "/sw.js",
-            "destination": "/sw.js"
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
         },
         {
-            "source": "/(.*)",
-            "destination": "/index.html"
+          "key": "Service-Worker-Allowed",
+          "value": "/vendor/streamsaver/"
         }
-    ],
-    "headers": [
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
         {
-            "source": "/(.*)",
-            "headers": [
-                {
-                    "key": "x-powered-by",
-                    "value": ""
-                },
-                {
-                    "key": "server",
-                    "value": "Nginx/1.24.0"
-                },
-                {
-                    "key": "x-vercel-cache",
-                    "value": ""
-                },
-                {
-                    "key": "x-vercel-id",
-                    "value": ""
-                }
-            ]
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "no-referrer"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=()"
         }
-    ]
+      ]
+    }
+  ]
 }

@@ -1,0 +1,18 @@
+[
+  {
+    "AllowedHeaders": [],
+    "AllowedMethods": [
+      "GET",
+      "HEAD"
+    ],
+    "AllowedOrigins": [
+      "https://download.example.com"
+    ],
+    "ExposeHeaders": [
+      "Content-Length",
+      "Content-Type",
+      "ETag"
+    ],
+    "MaxAgeSeconds": 3600
+  }
+]
